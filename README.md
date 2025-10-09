@@ -264,9 +264,24 @@ Cursor will automatically call the MCP tools (`analyzeRepo`, `scanRepoSBOM`, `vu
 
 ### Testing the MCP Server
 
-Test the MCP server manually:
+For debug purposes, here you can find some examples to test the MCP server.
+
+- Individually:
 ```bash
-echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}' | ./gothreatscope --mcp
+  `echo '{"id":2,"jsonrpc":"2.0","method":"ping"}' | gothreatscope --mcp`
+```
+- All at once (or copy the one you want to test):
+```bash
+printf '%s\n' \
+'{"id":1,"jsonrpc":"2.0","method":"initialize"}' \
+'{"id":2,"jsonrpc":"2.0","method":"ping"}' \
+'{"id":3,"jsonrpc":"2.0","method":"tools/list"}' \
+'{"id":4,"jsonrpc":"2.0","method":"tools/call","params":{"name":"scanRepoSBOM","arguments":{"path":"."}}}' \
+'{"id":5,"jsonrpc":"2.0","method":"tools/call","params":{"name":"vulnCheck","arguments":{"path":"."}}}' \
+'{"id":6,"jsonrpc":"2.0","method":"tools/call","params":{"name":"secretScan","arguments":{"path":".","engine":"auto"}}}' \
+'{"id":7,"jsonrpc":"2.0","method":"tools/call","params":{"name":"analyzeRepo","arguments":{"path":"."}}}' \
+'{"id":8,"jsonrpc":"2.0","method":"resources/list"}' \
+| gothreatscope --mcp
 ```
 
 ---
