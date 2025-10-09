@@ -1,7 +1,5 @@
-# If you prefer the allow list template instead of the deny list, see community template:
-# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
-#
 # Binaries for programs and plugins
+bin/
 *.exe
 *.exe~
 *.dll
@@ -10,6 +8,7 @@
 
 # Test binary, built with `go test -c`
 *.test
+testdata/
 
 # Code coverage profiles and other test artifacts
 *.out
@@ -29,4 +28,8 @@ go.work.sum
 
 # Editor/IDE
 # .idea/
-# .vscode/
+.vscode/
+.cursor/
+
+# Generated data from gothreatscope tool
+gothreatscope_store/
