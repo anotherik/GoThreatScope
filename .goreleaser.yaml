@@ -1,4 +1,5 @@
 project_name: gothreatscope
+version: 2
 
 builds:
   - id: gts
