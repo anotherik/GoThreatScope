@@ -11,15 +11,17 @@ builds:
     env: [CGO_ENABLED=0]
     goos: [linux, windows]
     goarch: [amd64, arm64]
+    flags:
+      - -trimpath
     ldflags:
-      - -s -w -trimpath
+      - -s -w
       - -X main.version={{.Version}}
       - -X main.commit={{.Commit}}
       - -X main.date={{.Date}}
 
 archives:
-  - formats: [tar.gz]                # was: format: tar.gz (deprecated)
-    format_overrides:                # was: format_overrides.format (deprecated)
+  - formats: [tar.gz]
+    format_overrides:
       - goos: windows
         formats: [zip]
     name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
@@ -29,14 +31,12 @@ archives:
 
 source:
   enabled: true
-  # default format is tar.gz; set explicitly if you want:
-  # format: tar.gz
   name_template: "{{ .ProjectName }}_{{ .Version }}_source"
 
 checksum:
   name_template: checksums.txt
 
-changelog:                       # top-level in v2 (not under release)
+changelog:
   use: git
   sort: asc
   filters:
