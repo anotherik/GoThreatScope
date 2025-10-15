@@ -1,0 +1,54 @@
+version: 1
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: gothreatscope
+    main: ./cmd/gothreatscope
+    binary: gothreatscope
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, windows]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w -trimpath
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+
+archives:
+  - id: default
+    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - LICENSE
+
+source:
+  enabled: true
+  formats: [tar.gz]
+  name_template: "{{ .ProjectName }}_{{ .Version }}_source"
+
+checksum:
+  name_template: checksums.txt
+
+release:
+  draft: false
+  prerelease: false
+  github:
+    owner: anotherik
+    name: GoThreatScope
+  changelog:
+    use: git
+    sort: asc
+    filters:
+      exclude:
+        - '^docs:'
+        - '^test:'
+        - '^chore:'
+        - 'Merge pull request'
