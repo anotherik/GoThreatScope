@@ -43,9 +43,21 @@ import (
 	"github.com/anotherik/gothreatscope/pkg/vuln"
 )
 
-const version = "0.1" // bump as needed
+var (
+  version = "dev"      // set by -X main.version
+  commit  = "none"     // set by -X main.commit
+  date    = "unknown"  // set by -X main.date
+)
 
 func main() {
+	showVersion := flag.Bool("version", false, "print version and exit")
+    flag.Parse()
+	
+	if *showVersion {
+    	fmt.Printf("GoThreatScope %s (commit %s, built %s)\n", version, commit, date)
+        return
+    }
+	
 	// No args → show help
 	if len(os.Args) < 2 {
 		rootUsage()
