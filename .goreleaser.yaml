@@ -1,4 +1,4 @@
-version: 1
+version: 2
 
 before:
   hooks:
@@ -8,8 +8,7 @@ builds:
   - id: gothreatscope
     main: ./cmd/gothreatscope
     binary: gothreatscope
-    env:
-      - CGO_ENABLED=0
+    env: [CGO_ENABLED=0]
     goos: [linux, windows]
     goarch: [amd64, arm64]
     ldflags:
@@ -19,11 +18,10 @@ builds:
       - -X main.date={{.Date}}
 
 archives:
-  - id: default
-    format: tar.gz
-    format_overrides:
+  - formats: [tar.gz]                # was: format: tar.gz (deprecated)
+    format_overrides:                # was: format_overrides.format (deprecated)
       - goos: windows
-        format: zip
+        formats: [zip]
     name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - README.md
@@ -31,24 +29,26 @@ archives:
 
 source:
   enabled: true
-  formats: [tar.gz]
+  # default format is tar.gz; set explicitly if you want:
+  # format: tar.gz
   name_template: "{{ .ProjectName }}_{{ .Version }}_source"
 
 checksum:
   name_template: checksums.txt
 
+changelog:                       # top-level in v2 (not under release)
+  use: git
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - 'Merge pull request'
+
 release:
-  draft: false
-  prerelease: false
   github:
     owner: anotherik
     name: GoThreatScope
-  changelog:
-    use: git
-    sort: asc
-    filters:
-      exclude:
-        - '^docs:'
-        - '^test:'
-        - '^chore:'
-        - 'Merge pull request'
+  draft: false
+  prerelease: false
