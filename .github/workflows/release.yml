@@ -2,33 +2,45 @@ name: Release GoThreatScope
 
 on:
   push:
-    tags:
-      - 'v*'               # e.g., v0.2.0
+    tags: ['v*']
   release:
-    types: [published]      # if you publish a release via the UI
-  workflow_dispatch: {}     # run manually from Actions tab
+    types: [published]
+  workflow_dispatch: {}
 
+# lock permissions down (grant only what's needed)
 permissions:
-  contents: write           # required to create GitHub Releases & upload assets
+  contents: write
+  actions: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
+      # (optional) network hardening; comment out if you don't want it
+      # - name: Harden Runner
+      #   uses: step-security/harden-runner@<commit-sha> # e.g., v2
+      #   with:
+      #     egress-policy: audit   # or 'block' once you're confident
+
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
         with:
-          fetch-depth: 0    # needed for changelog & tags
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6
         with:
-          go-version: '1.22'  # match your supported version
+          go-version: '1.22'
 
-      # Optional but helpful: cache Go modules to speed up builds
       - name: Cache Go modules
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
             ~/.cache/go-build
@@ -38,10 +50,10 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6
         with:
           distribution: goreleaser
-          version: '~> v1'
+          version: '~> v2'   # GoReleaser major version
           args: release --clean
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # auto-provided
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
