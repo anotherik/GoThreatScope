@@ -49,14 +49,23 @@ var (
   date    = "unknown"  // set by -X main.date
 )
 
+func hasArg(args []string, targets ...string) bool {
+	for _, a := range args {
+		for _, t := range targets {
+			if a == t {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func main() {
-	showVersion := flag.Bool("version", false, "print version and exit")
-    flag.Parse()
 	
-	if *showVersion {
-    	fmt.Printf("GoThreatScope %s (commit %s, built %s)\n", version, commit, date)
-        return
-    }
+	if len(os.Args) > 1 && hasArg(os.Args[1:], "--version", "-v", "version") {
+		fmt.Printf("GoThreatScope %s (commit %s, built %s)\n", version, commit, date)
+		return
+	}
 	
 	// No args → show help
 	if len(os.Args) < 2 {
@@ -68,9 +77,6 @@ func main() {
 
 	// Global flags
 	switch arg {
-	case "--version", "-v":
-		fmt.Println("GoThreatScope", version)
-		return
 	case "--help", "-h":
 		rootUsage()
 		return
