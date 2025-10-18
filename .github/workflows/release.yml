@@ -19,15 +19,8 @@ concurrency:
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
 
     steps:
-      # (optional) network hardening; comment out if you don't want it
-      # - name: Harden Runner
-      #   uses: step-security/harden-runner@<commit-sha> # e.g., v2
-      #   with:
-      #     egress-policy: audit   # or 'block' once you're confident
-
       - name: Checkout
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
         with:
@@ -39,6 +32,8 @@ jobs:
         with:
           go-version: '1.23.6'
           check-latest: true
+        env:
+          GOTOOLCHAIN: auto
 
       - name: Cache Go modules
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
@@ -54,7 +49,9 @@ jobs:
         uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6
         with:
           distribution: goreleaser
-          version: '~> v2'   # GoReleaser major version
+          version: '~> v2'
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GOTOOLCHAIN: auto
+  
