@@ -6,6 +6,7 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/anotherik/GoThreatScope.svg)](https://pkg.go.dev/github.com/anotherik/GoThreatScope)
 [![Go Report Card](https://goreportcard.com/badge/github.com/anotherik/GoThreatScope)](https://goreportcard.com/report/github.com/anotherik/GoThreatScope)
 [![GitHub stars](https://img.shields.io/github/stars/anotherik/GoThreatScope.svg)](https://github.com/anotherik/GoThreatScope/stargazers)
+[![MCP Badge](https://lobehub.com/badge/mcp/anotherik-gothreatscope)](https://lobehub.com/mcp/anotherik-gothreatscope)
 
 **GoThreatScope** is a modular, educational security toolchain written in Go.  
 It generates a lightweight SBOM, checks dependencies against [osv.dev](https://osv.dev) for vulnerabilities and known malicious packages, scans for hardcoded secrets (using [Gitleaks](https://github.com/gitleaks/gitleaks) when available, or a builtin fallback), and records metrics for each run (using [pipedream](https://pipedream.com/)).
