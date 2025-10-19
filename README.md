@@ -242,7 +242,7 @@ Create a `.cursor/mcp.json` file in your workspace root:
 {
   "mcpServers": {
     "gothreatscope": {
-      "command": "/absolute/path/to/gothreatscope",
+      "command": "./gothreatscope",
       "args": ["--mcp"],
       "env": {
         "GTS_MCP_MODE": "1"
