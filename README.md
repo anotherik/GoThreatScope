@@ -185,7 +185,7 @@ gothreatscope --mcp
 
 When running in MCP mode, GoThreatScope exposes several tools and resources that can be invoked programmatically or through compatible editors such as Cursor or VS Code (with MCP support).
 
-### Available tools
+### Available MCP Tools
 
 | Tool | Description |
 |------|--------------|
@@ -193,6 +193,58 @@ When running in MCP mode, GoThreatScope exposes several tools and resources that
 | `scanRepoSBOM` | Generates an SBOM and returns its file URI. |
 | `vulnCheck` | Checks for vulnerabilities and malicious packages using osv.dev. |
 | `secretScan` | Scans for secrets (using Gitleaks or the builtin engine). |
+
+GoThreatScope exposes the following tools via MCP. These are also defined in [tools.json](tools.json):
+
+```json
+[
+  {
+    "name": "analyzeRepo",
+    "description": "Run complete security analysis pipeline (SBOM → Vulnerability → Secrets) on a repository",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string", "description": "Path to the repository to analyze" }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "scanRepoSBOM",
+    "description": "Generate Software Bill of Materials for a repository",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string", "description": "Path to the repository to scan" }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "vulnCheck",
+    "description": "Check for vulnerabilities in repository dependencies using OSV.dev",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string", "description": "Path to the repository to check" }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "secretScan",
+    "description": "Scan repository for secrets and sensitive information",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string", "description": "Path to the repository to scan" },
+        "engine": { "type": "string", "description": "Scanning engine to use (auto, gitleaks, builtin)", "default": "auto" }
+      },
+      "required": ["path"]
+    }
+  }
+]
+```
 
 ### Available resources
 
