@@ -1,0 +1,63 @@
+[
+  {
+    "name": "analyzeRepo",
+    "description": "Run complete security analysis pipeline (SBOM → Vulnerability → Secrets) on a repository",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path to the repository to analyze"
+        }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "scanRepoSBOM",
+    "description": "Generate Software Bill of Materials for a repository",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path to the repository to scan"
+        }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "vulnCheck",
+    "description": "Check for vulnerabilities in repository dependencies using OSV.dev",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path to the repository to check"
+        }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "secretScan",
+    "description": "Scan repository for secrets and sensitive information",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path to the repository to scan"
+        },
+        "engine": {
+          "type": "string",
+          "description": "Scanning engine to use (auto, gitleaks, builtin)",
+          "default": "auto"
+        }
+      },
+      "required": ["path"]
+    }
+  }
+]
