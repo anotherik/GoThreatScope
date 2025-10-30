@@ -45,6 +45,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
+      - name: Generate tools.json
+        run: |
+          go generate ./...
+          test -f tools.json && echo "tools.json generated" || (echo "tools.json missing" && exit 1)
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6
         with:

@@ -11,15 +11,18 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	// Single source of truth for tools (schemas + descriptions)
+	"github.com/anotherik/gothreatscope/pkg/mcp/toolspec"
 )
 
 // Server represents the MCP server with configurable tool implementations.
 type Server struct {
 	// Tool implementations (set by main.go)
-	RunAnalyzeRepo   func(path string) (interface{}, error)
-	RunScanRepoSBOM  func(path string) (interface{}, error)
-	RunVulnCheck     func(path string) (interface{}, error)
-	RunSecretScan    func(path, engine string) (interface{}, error)
+	RunAnalyzeRepo  func(path string) (interface{}, error)
+	RunScanRepoSBOM func(path string) (interface{}, error)
+	RunVulnCheck    func(path string) (interface{}, error)
+	RunSecretScan   func(path, engine string) (interface{}, error)
 }
 
 // MCP message types
@@ -43,7 +46,7 @@ type Error struct {
 	Data    interface{} `json:"data,omitempty"`
 }
 
-// Tool definitions
+// Tool definitions (wire format)
 type Tool struct {
 	Name        string                 `json:"name"`
 	Description string                 `json:"description"`
@@ -64,10 +67,10 @@ type Resource struct {
 }
 
 type ResourceContents struct {
-	URI     string `json:"uri"`
+	URI      string `json:"uri"`
 	MimeType string `json:"mimeType"`
-	Text    string `json:"text,omitempty"`
-	Blob    string `json:"blob,omitempty"`
+	Text     string `json:"text,omitempty"`
+	Blob     string `json:"blob,omitempty"`
 }
 
 // Initialize request/response
@@ -88,7 +91,7 @@ func (s *Server) RunStdio() error {
 	// Set up logging to stderr to avoid interfering with JSON-RPC on stdout
 	log.SetOutput(os.Stderr)
 	log.SetPrefix("[GoThreatScope MCP] ")
-	
+
 	// Use buffered I/O for better performance
 	reader := bufio.NewReader(os.Stdin)
 	writer := bufio.NewWriter(os.Stdout)
@@ -121,7 +124,7 @@ func (s *Server) RunStdio() error {
 
 		// Handle request
 		resp := s.handleRequest(req, &initialized)
-		
+
 		// Send response
 		respBytes, err := json.Marshal(resp)
 		if err != nil {
@@ -195,76 +198,15 @@ func (s *Server) handleInitialize(req Request, initialized *bool) Response {
 			},
 			ServerInfo: map[string]interface{}{
 				"name":    "GoThreatScope",
-				"version": "0.1",
+				"version": "0.1.0", // aligned with tag & manifest
 			},
 		},
 	}
 }
 
 func (s *Server) handleToolsList(req Request) Response {
-	tools := []Tool{
-		{
-			Name:        "analyzeRepo",
-			Description: "Run complete security analysis pipeline (SBOM → Vulnerability → Secrets) on a repository",
-			InputSchema: map[string]interface{}{
-				"type": "object",
-				"properties": map[string]interface{}{
-					"path": map[string]interface{}{
-						"type":        "string",
-						"description": "Path to the repository to analyze",
-					},
-				},
-				"required": []string{"path"},
-			},
-		},
-		{
-			Name:        "scanRepoSBOM",
-			Description: "Generate Software Bill of Materials for a repository",
-			InputSchema: map[string]interface{}{
-				"type": "object",
-				"properties": map[string]interface{}{
-					"path": map[string]interface{}{
-						"type":        "string",
-						"description": "Path to the repository to scan",
-					},
-				},
-				"required": []string{"path"},
-			},
-		},
-		{
-			Name:        "vulnCheck",
-			Description: "Check for vulnerabilities in repository dependencies using OSV.dev",
-			InputSchema: map[string]interface{}{
-				"type": "object",
-				"properties": map[string]interface{}{
-					"path": map[string]interface{}{
-						"type":        "string",
-						"description": "Path to the repository to check",
-					},
-				},
-				"required": []string{"path"},
-			},
-		},
-		{
-			Name:        "secretScan",
-			Description: "Scan repository for secrets and sensitive information",
-			InputSchema: map[string]interface{}{
-				"type": "object",
-				"properties": map[string]interface{}{
-					"path": map[string]interface{}{
-						"type":        "string",
-						"description": "Path to the repository to scan",
-					},
-					"engine": map[string]interface{}{
-						"type":        "string",
-						"description": "Scanning engine to use (auto, gitleaks, builtin)",
-						"default":     "auto",
-					},
-				},
-				"required": []string{"path"},
-			},
-		},
-	}
+	// Build tools from the central registry to avoid drift with README/manifest.
+	tools := s.toolsFromRegistry()
 
 	return Response{
 		JSONRPC: "2.0",
@@ -273,6 +215,13 @@ func (s *Server) handleToolsList(req Request) Response {
 			"tools": tools,
 		},
 	}
+}
+
+type toolsCallParams struct {
+	Name   string                 `json:"name"`
+	Args   map[string]interface{} `json:"arguments"`
+	Wait   bool                   `json:"wait,omitempty"`
+	Stream bool                   `json:"stream,omitempty"`
 }
 
 func (s *Server) handleToolsCall(req Request) Response {
@@ -341,52 +290,53 @@ func (s *Server) handleToolsCall(req Request) Response {
 }
 
 func (s *Server) executeTool(toolName string, arguments map[string]interface{}) (interface{}, error) {
-	// Extract path argument
-	path, ok := arguments["path"].(string)
-	if !ok {
-		return nil, fmt.Errorf("missing required argument: path")
+	// Extract path argument where relevant
+	path, _ := arguments["path"].(string)
+
+	// For tools that require a path, validate it
+	requiresPath := toolName == "analyzeRepo" || toolName == "scanRepoSBOM" || toolName == "vulnCheck" || toolName == "secretScan"
+	if requiresPath {
+		if path == "" {
+			return nil, fmt.Errorf("missing required argument: path")
+		}
+		absPath, err := filepath.Abs(path)
+		if err != nil {
+			return nil, fmt.Errorf("invalid path: %w", err)
+		}
+		if _, err := os.Stat(absPath); os.IsNotExist(err) {
+			return nil, fmt.Errorf("path does not exist: %s", absPath)
+		}
+		path = absPath
 	}
 
-	// Ensure path is absolute
-	absPath, err := filepath.Abs(path)
-	if err != nil {
-		return nil, fmt.Errorf("invalid path: %w", err)
-	}
-
-	// Check if path exists
-	if _, err := os.Stat(absPath); os.IsNotExist(err) {
-		return nil, fmt.Errorf("path does not exist: %s", absPath)
-	}
-
-	// Execute appropriate tool
 	switch toolName {
 	case "analyzeRepo":
 		if s.RunAnalyzeRepo == nil {
 			return nil, fmt.Errorf("analyzeRepo tool not implemented")
 		}
-		return s.RunAnalyzeRepo(absPath)
+		return s.RunAnalyzeRepo(path)
 
 	case "scanRepoSBOM":
 		if s.RunScanRepoSBOM == nil {
 			return nil, fmt.Errorf("scanRepoSBOM tool not implemented")
 		}
-		return s.RunScanRepoSBOM(absPath)
+		return s.RunScanRepoSBOM(path)
 
 	case "vulnCheck":
 		if s.RunVulnCheck == nil {
 			return nil, fmt.Errorf("vulnCheck tool not implemented")
 		}
-		return s.RunVulnCheck(absPath)
+		return s.RunVulnCheck(path)
 
 	case "secretScan":
 		if s.RunSecretScan == nil {
 			return nil, fmt.Errorf("secretScan tool not implemented")
 		}
 		engine := "auto"
-		if engineArg, ok := arguments["engine"].(string); ok {
+		if engineArg, ok := arguments["engine"].(string); ok && engineArg != "" {
 			engine = engineArg
 		}
-		return s.RunSecretScan(absPath, engine)
+		return s.RunSecretScan(path, engine)
 
 	default:
 		return nil, fmt.Errorf("unknown tool: %s", toolName)
@@ -506,7 +456,7 @@ func (s *Server) readResource(uri string) (ResourceContents, error) {
 	// Handle file:// URIs
 	if strings.HasPrefix(uri, "file://") {
 		filePath := strings.TrimPrefix(uri, "file://")
-		
+
 		// Security check: ensure the file is within gothreatscope_store
 		absPath, err := filepath.Abs(filePath)
 		if err != nil {
@@ -552,3 +502,18 @@ func formatResult(result interface{}) string {
 	}
 	return string(jsonBytes)
 }
+
+// toolsFromRegistry converts the central toolspec.Registry to wire-format tools.
+func (s *Server) toolsFromRegistry() []Tool {
+	out := make([]Tool, 0, len(toolspec.Registry))
+	for _, r := range toolspec.Registry {
+		out = append(out, Tool{
+			Name:        r.Name,
+			Description: r.Description,
+			InputSchema: toolspec.ToJSONMap(r.Schema),
+		})
+	}
+	return out
+}
+
+// End of pkg/mcp/mcp.go

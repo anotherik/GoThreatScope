@@ -187,69 +187,32 @@ When running in MCP mode, GoThreatScope exposes several tools and resources that
 
 ### Available MCP Tools
 
+GoThreatScope exposes the following tools via the [Model Context Protocol (MCP)](https://modelcontextprotocol.io).  
+These tools are automatically registered and described in [`tools.json`](./tools.json).
+
 | Tool | Description |
 |------|--------------|
-| `analyzeRepo` | Runs the full pipeline (SBOM → Vulnerabilities → Secrets). |
-| `scanRepoSBOM` | Generates an SBOM and returns its file URI. |
-| `vulnCheck` | Checks for vulnerabilities and malicious packages using osv.dev. |
-| `secretScan` | Scans for secrets (using Gitleaks or the builtin engine). |
+| **analyzeRepo** | Runs the full pipeline *(SBOM → Vulnerabilities → Secrets)*. |
+| **scanRepoSBOM** | Generates an SBOM and returns its file URI. |
+| **vulnCheck** | Checks for vulnerabilities and malicious packages using [OSV.dev](https://osv.dev). |
+| **secretScan** | Scans for secrets *(using Gitleaks or the built-in engine)*. |
 
-GoThreatScope exposes the following tools via MCP. These are also defined in [tools.json](tools.json):
+See the full JSON manifest here: [`tools.json`](./tools.json).
 
-```json
-[
-  {
-    "name": "analyzeRepo",
-    "description": "Run complete security analysis pipeline (SBOM → Vulnerability → Secrets) on a repository",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "path": { "type": "string", "description": "Path to the repository to analyze" }
-      },
-      "required": ["path"]
-    }
-  },
-  {
-    "name": "scanRepoSBOM",
-    "description": "Generate Software Bill of Materials for a repository",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "path": { "type": "string", "description": "Path to the repository to scan" }
-      },
-      "required": ["path"]
-    }
-  },
-  {
-    "name": "vulnCheck",
-    "description": "Check for vulnerabilities in repository dependencies using OSV.dev",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "path": { "type": "string", "description": "Path to the repository to check" }
-      },
-      "required": ["path"]
-    }
-  },
-  {
-    "name": "secretScan",
-    "description": "Scan repository for secrets and sensitive information",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "path": { "type": "string", "description": "Path to the repository to scan" },
-        "engine": { "type": "string", "description": "Scanning engine to use (auto, gitleaks, builtin)", "default": "auto" }
-      },
-      "required": ["path"]
-    }
-  }
-]
-```
+## Exposed MCP Resources
 
-### Available resources
+GoThreatScope also exposes **resources** once a scan is performed.  
+These resources allow clients (e.g., Cursor, VS Code, etc) to fetch structured analysis outputs like:
+
+- **SBOMs** — stored as `sbom.json`
+- **Vulnerability reports** — stored as `vuln.json`
+- **Secrets findings** — stored as `secrets.json`
+- **Metrics** — stored as `metrics.json`
+
+Resources are automatically listed through the MCP protocol methods:
 
 - `resources/list` lists all stored artifacts across scanned projects.  
-- `resources/read` retrieves the content of a specific file via a `gts://` URI.
+- `resources/read` retrieves the content of a specific file via a `file://` URI (e.g., local artifact path).
 
 ### Example MCP output
 

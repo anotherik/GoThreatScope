@@ -1,63 +1,109 @@
-[
-  {
-    "name": "analyzeRepo",
-    "description": "Run complete security analysis pipeline (SBOM → Vulnerability → Secrets) on a repository",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "path": {
-          "type": "string",
-          "description": "Path to the repository to analyze"
-        }
-      },
-      "required": ["path"]
-    }
-  },
-  {
-    "name": "scanRepoSBOM",
-    "description": "Generate Software Bill of Materials for a repository",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "path": {
-          "type": "string",
-          "description": "Path to the repository to scan"
-        }
-      },
-      "required": ["path"]
-    }
-  },
-  {
-    "name": "vulnCheck",
-    "description": "Check for vulnerabilities in repository dependencies using OSV.dev",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "path": {
-          "type": "string",
-          "description": "Path to the repository to check"
-        }
-      },
-      "required": ["path"]
-    }
-  },
-  {
-    "name": "secretScan",
-    "description": "Scan repository for secrets and sensitive information",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "path": {
-          "type": "string",
-          "description": "Path to the repository to scan"
+{
+  "name": "anotherik-gothreatscope",
+  "version": "0.1.0",
+  "language": "go",
+  "tools": [
+    {
+      "name": "analyzeRepo",
+      "description": "Run complete security analysis pipeline (SBOM → Vulnerability → Secrets) on a repository",
+      "inputSchema": {
+        "$defs": {
+          "AnalyzeRepoArgs": {
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "type": "object"
+          }
         },
-        "engine": {
-          "type": "string",
-          "description": "Scanning engine to use (auto, gitleaks, builtin)",
-          "default": "auto"
-        }
-      },
-      "required": ["path"]
+        "$id": "https://github.com/anotherik/gothreatscope/pkg/mcp/toolspec/analyze-repo-args",
+        "$ref": "#/$defs/AnalyzeRepoArgs",
+        "$schema": "https://json-schema.org/draft/2020-12/schema"
+      }
+    },
+    {
+      "name": "scanRepoSBOM",
+      "description": "Generate Software Bill of Materials for a repository",
+      "inputSchema": {
+        "$defs": {
+          "ScanRepoSBOMArgs": {
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "type": "object"
+          }
+        },
+        "$id": "https://github.com/anotherik/gothreatscope/pkg/mcp/toolspec/scan-repo-sbom-args",
+        "$ref": "#/$defs/ScanRepoSBOMArgs",
+        "$schema": "https://json-schema.org/draft/2020-12/schema"
+      }
+    },
+    {
+      "name": "vulnCheck",
+      "description": "Check for vulnerabilities in repository dependencies using OSV.dev",
+      "inputSchema": {
+        "$defs": {
+          "VulnCheckArgs": {
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "type": "object"
+          }
+        },
+        "$id": "https://github.com/anotherik/gothreatscope/pkg/mcp/toolspec/vuln-check-args",
+        "$ref": "#/$defs/VulnCheckArgs",
+        "$schema": "https://json-schema.org/draft/2020-12/schema"
+      }
+    },
+    {
+      "name": "secretScan",
+      "description": "Scan repository for secrets and sensitive information",
+      "inputSchema": {
+        "$defs": {
+          "SecretScanArgs": {
+            "additionalProperties": false,
+            "properties": {
+              "engine": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path",
+              "engine"
+            ],
+            "type": "object"
+          }
+        },
+        "$id": "https://github.com/anotherik/gothreatscope/pkg/mcp/toolspec/secret-scan-args",
+        "$ref": "#/$defs/SecretScanArgs",
+        "$schema": "https://json-schema.org/draft/2020-12/schema"
+      }
+    }
+  ],
+  "capabilities": {
+    "resources": {
+      "list": true,
+      "read": true
     }
   }
-]
+}
