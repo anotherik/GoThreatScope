@@ -199,7 +199,7 @@ These tools are automatically registered and described in [`tools.json`](./tools
 
 See the full JSON manifest here: [`tools.json`](./tools.json).
 
-## Exposed MCP Resources
+### Exposed MCP Resources
 
 GoThreatScope also exposes **resources** once a scan is performed.  
 These resources allow clients (e.g., Cursor, VS Code, etc) to fetch structured analysis outputs like:
