@@ -3,7 +3,6 @@ version: 2
 before:
   hooks:
     - go mod tidy
-    - sh -c 'GTS_VERSION={{ .Version }} go generate ./...'
 
 builds:
   - id: gothreatscope
