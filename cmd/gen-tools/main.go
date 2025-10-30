@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"github.com/anotherik/gothreatscope/pkg/mcp/toolspec"
-	"github.com/anotherik/gothreatscope/internal/version"
 )
 
 type manifestTool struct {
@@ -24,12 +23,17 @@ type manifest struct {
 	Capabilities map[string]any `json:"capabilities,omitempty"`
 }
 
+v := os.Getenv("GTS_VERSION")
+if v == "" {
+    v = "dev" // fallback if not provided
+}
+
 func main() {
 	outFile := filepath.Join(".", "tools.json")
 
 	m := manifest{
 		Name:     "anotherik-gothreatscope",
-		Version:  version.Version, // keep aligned with your release tag
+		Version:  v,
 		Language: "go",
 		Tools:    make([]manifestTool, 0, len(toolspec.Registry)),
 		Capabilities: map[string]any{
