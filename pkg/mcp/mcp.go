@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	// Single source of truth for tools (schemas + descriptions)
 	"github.com/anotherik/gothreatscope/pkg/mcp/toolspec"
@@ -23,6 +24,7 @@ type Server struct {
 	RunScanRepoSBOM func(path string) (interface{}, error)
 	RunVulnCheck    func(path string) (interface{}, error)
 	RunSecretScan   func(path, engine string) (interface{}, error)
+	ServerVersion string
 }
 
 // MCP message types
@@ -156,6 +158,8 @@ func (s *Server) handleRequest(req Request, initialized *bool) Response {
 	case "notifications/initialized":
 		// No response needed for notifications
 		return Response{}
+	case "ping":
+        return s.handlePing(req)
 	default:
 		return Response{
 			JSONRPC: "2.0",
@@ -198,7 +202,7 @@ func (s *Server) handleInitialize(req Request, initialized *bool) Response {
 			},
 			ServerInfo: map[string]interface{}{
 				"name":    "GoThreatScope",
-				"version": "0.1.0", // aligned with tag & manifest
+				"version": s.ServerVersion,
 			},
 		},
 	}
@@ -408,6 +412,18 @@ func (s *Server) handleResourcesRead(req Request) Response {
 			"contents": []ResourceContents{content},
 		},
 	}
+}
+
+func (s *Server) handlePing(req Request) Response {
+    return Response{
+        JSONRPC: "2.0",
+        ID:      req.ID,
+        Result: map[string]any{
+            "pong":    true,
+            "version": s.ServerVersion,
+            "time":    time.Now().UTC().Format(time.RFC3339),
+        },
+    }
 }
 
 func (s *Server) listStoredResources() []Resource {

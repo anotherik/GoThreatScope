@@ -366,7 +366,9 @@ func runAnalyze(args []string) {
 func runMCP() {
 	// Tell subpackages we're in MCP mode: stdout must be JSON-only.
     _ = os.Setenv("GTS_MCP_MODE", "1")
-	s := &mcp.Server{}
+	s := &mcp.Server{
+		ServerVersion: version,
+	}
 
 	// A) Full pipeline (already per-project persistent via analysis.AnalyzeRepo)
 	s.RunAnalyzeRepo = func(path string) (interface{}, error) {
