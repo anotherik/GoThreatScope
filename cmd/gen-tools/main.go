@@ -23,12 +23,13 @@ type manifest struct {
 	Capabilities map[string]any `json:"capabilities,omitempty"`
 }
 
-v := os.Getenv("GTS_VERSION")
-if v == "" {
-    v = "dev" // fallback if not provided
-}
-
 func main() {
+
+	v := os.Getenv("GTS_VERSION")
+	if v == "" {
+		v = "dev" // fallback if not provided
+	}
+
 	outFile := filepath.Join(".", "tools.json")
 
 	m := manifest{
