@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/anotherik/gothreatscope/pkg/mcp/toolspec"
+	"github.com/anotherik/gothreatscope/internal/version"
 )
 
 type manifestTool struct {
@@ -28,7 +29,7 @@ func main() {
 
 	m := manifest{
 		Name:     "anotherik-gothreatscope",
-		Version:  "0.1.0", // keep aligned with your release tag
+		Version:  version.Version, // keep aligned with your release tag
 		Language: "go",
 		Tools:    make([]manifestTool, 0, len(toolspec.Registry)),
 		Capabilities: map[string]any{
