@@ -197,12 +197,11 @@ These tools are automatically registered and described in [`tools.json`](./tools
 | **vulnCheck** | Checks for vulnerabilities and malicious packages using [OSV.dev](https://osv.dev). |
 | **secretScan** | Scans for secrets *(using Gitleaks or the built-in engine)*. |
 
-See the full JSON manifest here: [`tools.json`](./tools.json).
 
 ### Exposed MCP Resources
 
-GoThreatScope also exposes **resources** once a scan is performed.  
-These resources allow clients (e.g., Cursor, VS Code, etc) to fetch structured analysis outputs like:
+Once a scan is completed, GoThreatScope also exposes **resources** that can be accessed by compatible MCP clients (e.g., Cursor, VS Code).
+These resources allow the MCP clients to fetch structured analysis outputs like:
 
 - **SBOMs** — stored as `sbom.json`
 - **Vulnerability reports** — stored as `vuln.json`
