@@ -131,6 +131,49 @@ go build -o ./bin/gothreatscope ./cmd/gothreatscope
 chmod +x ./bin/gothreatscope
 ```
 
+### Docker / Podman
+
+You can run GoThreatScope in a container using the provided `Dockerfile`.
+
+Build image metadata from your local Git state:
+
+```bash
+# Docker
+docker build -t gothreatscope:latest \
+  --build-arg VERSION=0.0.0 \
+  --build-arg COMMIT=$(git rev-parse --short HEAD) \
+  --build-arg DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ) .
+
+# Podman
+podman build -t gothreatscope:latest \
+  --build-arg VERSION=0.0.0 \
+  --build-arg COMMIT=$(git rev-parse --short HEAD) \
+  --build-arg DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ) .
+```
+
+Run a full analysis against the current repository:
+
+```bash
+# Docker
+docker run --rm -v "$PWD":/workspace gothreatscope:latest analyze --path /workspace
+
+# Podman
+podman run --rm -v "$PWD":/workspace gothreatscope:latest analyze --path /workspace
+```
+
+Start MCP mode on stdio:
+
+```bash
+# Docker
+docker run --rm -i -v "$PWD":/workspace gothreatscope:latest --mcp
+
+# Podman
+podman run --rm -i -v "$PWD":/workspace gothreatscope:latest --mcp
+```
+
+The runtime image includes HTTPS CA certificates and runs as a non-root user.
+If `gitleaks` is not present in the container, GoThreatScope automatically uses the builtin secret scanner.
+
 ### Optional environment variables
 
 | Variable | Description | Default |
